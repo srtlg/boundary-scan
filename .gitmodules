@@ -1,0 +1,3 @@
+[submodule "lib/python-bsdl-parser"]
+	path = lib/python-bsdl-parser
+	url = https://github.com/cyrozap/python-bsdl-parser.git
