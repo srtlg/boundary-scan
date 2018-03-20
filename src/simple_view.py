@@ -63,14 +63,16 @@ class DevicePlotter(Canvas):
         self.qfp = QFP(device.get_package())
         self.qfp.center = kwargs['width'] // 2, kwargs['height'] // 2
         for i in range(self.qfp.npins):
-            if not self.device.get_pin_name(i + 1).startswith('PB'):
+            if self.device.get_pin_type(i + 1) == 'linkage':
                 self.qfp.pin_color[i] = 'gray'
+            elif self.device.is_jtag_name(self.device.get_pin_name(i + 1)):
+                self.qfp.pin_color[i] = 'white'
         self.qfp.plot(self)
 
 
-def main():
+def main(bsd_file):
     master = Tk()
-    dev1 = Device.from_bsd_file('/opt/Xilinx/14.7/ISE_DS/ISE/xc9500xl/data/xc9572xl_vq44.bsd')
+    dev1 = Device.from_bsd_file(bsd_file)
     w = DevicePlotter(dev1, master, width=800, height=600)
     w.pack()
     print(dev1.get_package())
@@ -80,4 +82,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    import sys
+    main(sys.argv[1])
