@@ -1,3 +1,6 @@
+"""
+A simple view of a boundary scan description file
+"""
 from tkinter import *
 from boundary_scan import *
 
@@ -8,8 +11,8 @@ class QFP(object):
         self.npins = 2 * (self.apins + self.bpins)
         self.pin_color = [None] * self.npins
         self.center = 0, 0
-        self.wpin = 30
-        self.hpin = 60
+        self.wpin = 15
+        self.hpin = 30
         self._pinhdl = []
 
     def plot(self, canvas: Canvas):
@@ -20,7 +23,7 @@ class QFP(object):
         y1 = cy + self.bpins * self.wpin / 2
         for i in range(self.apins):
             h = canvas.create_rectangle(x0 + i * self.wpin, y1, x0 + (i+1) * self.wpin, y1 + self.hpin)
-            canvas.create_text(x0 + (i+0.5) * self.wpin, y1 + self.hpin / 2, text=str(i + 1))
+            canvas.create_text(x0 + (i+0.5) * self.wpin, y1 + self.hpin / 2, text=str(i + 1), angle=90)
             self._pinhdl.append(h)
         for i in range(self.bpins):
             h = canvas.create_rectangle(x1, y1 - i * self.wpin, x1 + self.hpin, y1 - (i+1) * self.wpin)
@@ -28,7 +31,8 @@ class QFP(object):
             self._pinhdl.append(h)
         for i in range(self.apins):
             h = canvas.create_rectangle(x1 - i * self.wpin, y0, x1 - (i+1) * self.wpin, y0 - self.hpin)
-            canvas.create_text(x1 - (i + 0.5) * self.wpin, y0 - self.hpin / 2, text=str(self.apins + self.bpins + i + 1))
+            canvas.create_text(x1 - (i + 0.5) * self.wpin, y0 - self.hpin / 2, text=str(self.apins + self.bpins + i + 1),
+                               angle=90)
             self._pinhdl.append(h)
         for i in range(self.bpins):
             h = canvas.create_rectangle(x0, y0 + i * self.wpin, x0 - self.hpin, y0 + (i+1) * self.wpin)
@@ -49,7 +53,7 @@ class QFP(object):
 
     @staticmethod
     def _name2npins(name):
-        uname = name.upper().replace('_PACKAGE', '')
+        uname = name.upper()
         if uname.startswith('TQFP'):
             npins = int(uname[4:])
         elif uname.startswith('QFPN'):
@@ -65,7 +69,7 @@ class QFP(object):
 
 
 class DevicePlotter(Canvas):
-    def __init__(self, device, master, **kwargs):
+    def __init__(self, device, master: Tk, **kwargs):
         super().__init__(master, **kwargs)
         self.device = device
         self.qfp = QFP(device.get_package())
@@ -80,12 +84,10 @@ class DevicePlotter(Canvas):
 
 def main(bsd_file):
     master = Tk()
+    master.winfo_toplevel().title('BSD – ' + bsd_file)
     dev1 = Device.from_bsd_file(bsd_file)
-    w = DevicePlotter(dev1, master, width=800, height=600)
-    w.pack()
-    print(dev1.get_package())
-    print(dev1.get_pin_name(1))
-    print(dev1.get_pin_name(29))
+    w = DevicePlotter(dev1, master, width=1024, height=720)
+    w.pack(fill=BOTH, expand=YES)
     mainloop()
 
 
