@@ -49,12 +49,17 @@ class QFP(object):
 
     @staticmethod
     def _name2npins(name):
-        if name.lower().startswith('vq'):
-            npins = int(name[2:])
-            assert npins % 4 == 0, 'assume a square package'
-            return npins // 4, npins // 4
+        uname = name.upper().replace('_PACKAGE', '')
+        if uname.startswith('VQ'):
+            npins = int(uname[2:])
+        elif uname.startswith('TQFP'):
+            npins = int(uname[4:])
+        elif uname.startswith('QFPN'):
+            npins = int(uname[4:])
         else:
-            raise RuntimeError()
+            raise RuntimeError('unsupported package %s' % name)
+        assert npins % 4 == 0, 'assume a square package'
+        return npins // 4, npins // 4
 
 
 class DevicePlotter(Canvas):
