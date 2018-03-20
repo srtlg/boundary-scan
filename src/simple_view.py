@@ -13,6 +13,7 @@ class QFP(object):
         self.center = 0, 0
         self.wpin = 15
         self.hpin = 30
+        self.marking = None
         self._pinhdl = []
 
     def plot(self, canvas: Canvas):
@@ -39,6 +40,11 @@ class QFP(object):
             canvas.create_text(x0 - self.hpin / 2, y0 + (i+0.5) * self.wpin, text=str(2*self.apins + self.bpins + i + 1))
             self._pinhdl.append(h)
         assert len(self._pinhdl) == self.npins
+        if self.marking:
+            r = self.wpin
+            canvas.create_oval(x0 + 0.5 * self.wpin, y1 - self.hpin, x0 + 0.5 * self.wpin + r, y1 - self.hpin + r,
+                              fill='black')
+            canvas.create_text(cx, cy, text='\n'.join(self.marking.split('_')), justify=CENTER)
         self.replot(canvas)
         if False:
             canvas.create_text(x0, y0, text='0,0')
@@ -73,6 +79,7 @@ class DevicePlotter(Canvas):
         super().__init__(master, **kwargs)
         self.device = device
         self.qfp = QFP(device.get_package())
+        self.qfp.marking = device.component_name
         self.qfp.center = kwargs['width'] // 2, kwargs['height'] // 2
         for i in range(self.qfp.npins):
             if self.device.get_pin_type(i + 1) == 'linkage':

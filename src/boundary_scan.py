@@ -27,6 +27,7 @@ class Device(object):
         assert all([len(d.identifier_list) == 1 for d in bsd_ast.logical_port_description])
         self._name_to_type = dict([(d.identifier_list[0], d.pin_type) for d in bsd_ast.logical_port_description])
         self._device_package = bsd_ast.device_package_pin_mappings[0].pin_mapping_name.replace('_PACKAGE', '')
+        self.component_name = bsd_ast.component_name
         self._name_to_pin = None  # type: dict
         self._pin_to_name = None  # type: dict
         self._build_dicts(bsd_ast)
