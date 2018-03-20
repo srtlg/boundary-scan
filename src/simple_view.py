@@ -47,11 +47,12 @@ class QFP(object):
             if self.pin_color[i]:
                 canvas.itemconfig(self._pinhdl[i], fill=self.pin_color[i])
 
-
     @staticmethod
     def _name2npins(name):
         if name.lower().startswith('vq'):
-            return int(name[2:])//4, int(name[2:])//4
+            npins = int(name[2:])
+            assert npins % 4 == 0, 'assume a square package'
+            return npins // 4, npins // 4
         else:
             raise RuntimeError()
 
