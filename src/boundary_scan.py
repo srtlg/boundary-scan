@@ -1,6 +1,6 @@
-import ast
 import urjtag
 from bsdl import bsdlParser
+from bsdl_entities import PinMapString
 
 __all__ = ('TestPOD', 'UrJTAGPOD', 'Chain', 'Device')
 
@@ -35,18 +35,18 @@ class Device(object):
         self._name_to_pin = dict()
         self._pin_to_name = dict()
         name_to_dimension = dict([(d.identifier_list[0], d.port_dimension) for d in bsd_ast.logical_port_description])
-        pin_map = dict([(k.strip(), v.rstrip(',')) for k, v in [m.split(':') for m in bsd_ast.device_package_pin_mappings[0].pin_map]])
+        pin_map = PinMapString(bsd_ast.device_package_pin_mappings[0].pin_map)
         for name in list(self._name_to_type.keys()):
             dimension = name_to_dimension[name]
             if dimension == 'bit':
-                pin = int(pin_map[name])
+                assert len(pin_map[name]) == 1
+                pin = int(pin_map.fuzzy_int(pin_map[name][0]))
                 self._name_to_pin[name] = pin
                 self._pin_to_name[pin] = name
             elif hasattr(dimension, 'bit_vector'):
-                pins = ast.literal_eval(pin_map[name].lstrip())
-                for i, pin in enumerate(pins):
+                for i, pin in enumerate(pin_map[name]):
                     namei = '%s_%d' % (name, i+1)
-                    self._name_to_pin[namei] = pin
+                    self._name_to_pin[namei] = pin_map.fuzzy_int(pin)
                     self._pin_to_name[pin] = namei
                     self._name_to_type[namei] = self._name_to_type[name]
             else:

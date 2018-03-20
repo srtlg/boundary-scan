@@ -1,0 +1,22 @@
+@@grammar :: bsdlEntities
+
+vhdl_identifier = /[a-zA-Z][0-9a-zA-Z_]*/ ;
+integer = /[0-9]+/;
+
+
+(* B.6.3 *)
+port_name = vhdl_identifier;
+
+
+(* B.8.7.1 PIN_MAP_STRING *)
+pin_map_string = (comma).{ port_map:port_map }+ ;
+port_map = port_name:port_name colon pin_list:pin_list ;
+pin_list =
+        | @+:pin_id
+        | ( "(" @+:pin_id { comma @+:pin_id }+ ")" );
+pin_id = vhdl_identifier | integer;
+
+
+(* misc *)
+comma = ",";
+colon = ":";

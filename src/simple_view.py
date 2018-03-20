@@ -50,12 +50,14 @@ class QFP(object):
     @staticmethod
     def _name2npins(name):
         uname = name.upper().replace('_PACKAGE', '')
-        if uname.startswith('VQ'):
-            npins = int(uname[2:])
-        elif uname.startswith('TQFP'):
+        if uname.startswith('TQFP'):
             npins = int(uname[4:])
         elif uname.startswith('QFPN'):
             npins = int(uname[4:])
+        elif uname.startswith('VQ'):
+            npins = int(uname[2:])
+        elif uname.startswith('TQ'):
+            npins = int(uname[2:])
         else:
             raise RuntimeError('unsupported package %s' % name)
         assert npins % 4 == 0, 'assume a square package'
