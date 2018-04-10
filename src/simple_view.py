@@ -92,6 +92,17 @@ class DevicePlotter(Canvas):
     def update_pin_state(self):
         if self.test_pod is None:
             return
+        self.test_pod.query_all_pins_starts()
+        for name in self.test_pod.get_scanned_pin_names():
+            i = self.device.get_pin(name)
+            pin_type = self.device.get_pin_type(i)
+            if pin_type in ('inout', 'in'):
+                state = self.test_pod.query_input_pin(name)
+                if state == 0:
+                    self.qfp.pin_color[i] = 'blue'
+                else:
+                    self.qfp.pin_color[i] = 'red'
+        self.qfp.replot(self)
         self.after(1000, self.update_pin_state)
 
 

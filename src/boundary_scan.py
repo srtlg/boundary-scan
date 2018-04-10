@@ -9,9 +9,24 @@ class TestPOD(object):
     def __init__(self):
         pass
 
-    def initialize_device(self, dev):
+    def initialize_device(self, dev, regexp=None):
         raise NotImplementedError
-    
+
+    def initialize_pins(self):
+        raise NotImplementedError
+
+    def query_all_pins_starts(self):
+        raise NotImplementedError
+
+    def query_input_pin(self, name):
+        """:returns: 0 for low and any other value for high """
+        raise NotImplementedError
+
+    def get_scanned_pin_names(self):
+        raise NotImplementedError
+
+
+
 
 class UrJTAGPOD(TestPOD):
     def __init__(self, cable):
