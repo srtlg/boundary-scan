@@ -6,11 +6,16 @@ __all__ = ('TestPOD', 'UrJTAGPOD', 'Chain', 'Device')
 
 
 class TestPOD(object):
-    pass
+    def __init__(self):
+        pass
 
+    def initialize_device(self, dev):
+        raise NotImplementedError
+    
 
 class UrJTAGPOD(TestPOD):
     def __init__(self, cable):
+        super().__init__()
         self.chain = urjtag.chain()
         self.chain.cable(cable)
 
@@ -31,6 +36,7 @@ class Device(object):
         self._pin_to_name = None  # type: dict
         self._name_to_type = self._build_name_to_type(bsd_ast)
         self._build_dicts(bsd_ast)
+        self.number_of_pins = len(self._name_to_pin)
 
     @staticmethod
     def _build_name_to_type(bsd_ast):

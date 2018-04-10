@@ -87,6 +87,12 @@ class DevicePlotter(Canvas):
             elif self.device.is_jtag_name(self.device.get_pin_name(i + 1)):
                 self.qfp.pin_color[i] = 'white'
         self.qfp.plot(self)
+        self.test_pod = None  # type: TestPOD
+
+    def update_pin_state(self):
+        if self.test_pod is None:
+            return
+        self.after(1000, self.update_pin_state)
 
 
 def main(bsd_file):
