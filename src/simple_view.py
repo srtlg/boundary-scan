@@ -14,6 +14,7 @@ class QFP(object):
         self.wpin = 15
         self.hpin = 30
         self.marking = None
+        self.label = None
         self._pinhdl = []
 
     def plot(self, canvas: Canvas):
@@ -45,12 +46,18 @@ class QFP(object):
             canvas.create_oval(x0 + 0.5 * self.wpin, y1 - self.hpin, x0 + 0.5 * self.wpin + r, y1 - self.hpin + r,
                               fill='black')
             canvas.create_text(cx, cy, text='\n'.join(self.marking.split('_')), justify=CENTER)
+        canvas.bind('<Button-1>', self.on_click)
         self.replot(canvas)
         if False:
             canvas.create_text(x0, y0, text='0,0')
             canvas.create_text(x1, y0, text='1,0')
             canvas.create_text(x0, y1, text='0,1')
             canvas.create_text(x1, y1, text='1,1')
+
+    def on_click(self, event):
+        print(event)
+        if self.label:
+            self.label.configure
 
     def replot(self, canvas):
         for i in range(self.npins):
@@ -74,19 +81,23 @@ class QFP(object):
         return npins // 4, npins // 4
 
 
-class DevicePlotter(Canvas):
+class DevicePlotter(Frame):
     def __init__(self, device, master: Tk, **kwargs):
-        super().__init__(master, **kwargs)
+        super().__init__(master)
+        self.canvas = Canvas(self, **kwargs)
+        self.canvas.pack(fill=BOTH, expand=YES)
         self.device = device
         self.qfp = QFP(device.get_package())
         self.qfp.marking = device.component_name
         self.qfp.center = kwargs['width'] // 2, kwargs['height'] // 2
+        self.qfp.label = Label(self, text='STATUS')
+        self.qfp.label.pack(fill=X, expand=YES)
         for i in range(self.qfp.npins):
             if self.device.get_pin_type(i + 1) == 'linkage':
                 self.qfp.pin_color[i] = 'gray'
             elif self.device.is_jtag_name(self.device.get_pin_name(i + 1)):
                 self.qfp.pin_color[i] = 'white'
-        self.qfp.plot(self)
+        self.qfp.plot(self.canvas)
         self.test_pod = None  # type: TestPOD
 
     def update_pin_state(self):
@@ -102,7 +113,7 @@ class DevicePlotter(Canvas):
                     self.qfp.pin_color[i] = 'blue'
                 else:
                     self.qfp.pin_color[i] = 'red'
-        self.qfp.replot(self)
+        self.qfp.replot(self.canvas)
         self.after(1000, self.update_pin_state)
 
 
