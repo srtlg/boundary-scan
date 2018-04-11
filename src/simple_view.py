@@ -114,7 +114,7 @@ class DevicePlotter(Frame):
                 current_id = cid
             if pin_id is None:
                 return
-            self.label.configure(text='Pin %d = %s [%s]' % (pin_id, self.device.get_pin_name(pin_id + 1),
+            self.label.configure(text='Pin %d = %s [%s]' % (pin_id + 1, self.device.get_pin_name(pin_id + 1),
                                                             self.device.get_pin_type(pin_id + 1)))
             b = self.canvas.itemcget(current_id, 'fill')
             self.canvas.itemconfig(current_id, fill='yellow')
