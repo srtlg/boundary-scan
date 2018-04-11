@@ -14,7 +14,6 @@ class QFP(object):
         self.wpin = 15
         self.hpin = 30
         self.marking = None
-        self.label = None
         self._pinhdl = []
 
     def plot(self, canvas: Canvas):
@@ -46,7 +45,6 @@ class QFP(object):
             canvas.create_oval(x0 + 0.5 * self.wpin, y1 - self.hpin, x0 + 0.5 * self.wpin + r, y1 - self.hpin + r,
                               fill='black')
             canvas.create_text(cx, cy, text='\n'.join(self.marking.split('_')), justify=CENTER)
-        canvas.bind('<Button-1>', self.on_click)
         self.replot(canvas)
         if False:
             canvas.create_text(x0, y0, text='0,0')
@@ -54,10 +52,11 @@ class QFP(object):
             canvas.create_text(x0, y1, text='0,1')
             canvas.create_text(x1, y1, text='1,1')
 
-    def on_click(self, event):
-        print(event)
-        if self.label:
-            self.label.configure
+    def pin_id(self, canvas_id):
+        try:
+            return self._pinhdl.index(canvas_id)
+        except ValueError:
+            return None
 
     def replot(self, canvas):
         for i in range(self.npins):
@@ -86,12 +85,12 @@ class DevicePlotter(Frame):
         super().__init__(master)
         self.canvas = Canvas(self, **kwargs)
         self.canvas.pack(fill=BOTH, expand=YES)
+        self.label = Label(self, text='STATUS')
+        self.label.pack(fill=X, expand=YES)
         self.device = device
         self.qfp = QFP(device.get_package())
         self.qfp.marking = device.component_name
         self.qfp.center = kwargs['width'] // 2, kwargs['height'] // 2
-        self.qfp.label = Label(self, text='STATUS')
-        self.qfp.label.pack(fill=X, expand=YES)
         for i in range(self.qfp.npins):
             if self.device.get_pin_type(i + 1) == 'linkage':
                 self.qfp.pin_color[i] = 'gray'
@@ -99,6 +98,29 @@ class DevicePlotter(Frame):
                 self.qfp.pin_color[i] = 'white'
         self.qfp.plot(self.canvas)
         self.test_pod = None  # type: TestPOD
+        self.canvas.bind('<Button-1>', self.on_click)
+
+    def on_click(self, event):
+        current_id = self.canvas.find_withtag(CURRENT)
+        if current_id:
+            pin_id = self.qfp.pin_id(current_id[0])
+            if pin_id is None:
+                cid = None
+                for cid in self.canvas.find_below(current_id[0]):
+                    pin_id = self.qfp.pin_id(cid)
+                    if pin_id is not None:
+                        break
+                assert cid is not None
+                current_id = cid
+            if pin_id is None:
+                return
+            self.label.configure(text='Pin %d = %s [%s]' % (pin_id, self.device.get_pin_name(pin_id + 1),
+                                                            self.device.get_pin_type(pin_id + 1)))
+            b = self.canvas.itemcget(current_id, 'fill')
+            self.canvas.itemconfig(current_id, fill='yellow')
+            self.canvas.update_idletasks()
+            self.canvas.after(200)
+            self.canvas.itemconfig(current_id, fill=b)
 
     def update_pin_state(self):
         if self.test_pod is None:
