@@ -9,12 +9,16 @@ class QFP(object):
     def __init__(self, name):
         self.apins, self.bpins = self._name2npins(name)
         self.npins = 2 * (self.apins + self.bpins)
-        self.pin_color = [None] * self.npins
+        self._pin_color = [None] * self.npins
         self.center = 0, 0
         self.wpin = 15
         self.hpin = 30
         self.marking = None
         self._pinhdl = []
+
+    def set_pin_color(self, pin, color):
+        assert 0 < pin <= self.npins
+        self._pin_color[pin - 1] = color
 
     def plot(self, canvas: Canvas):
         cx, cy = self.center
@@ -60,8 +64,8 @@ class QFP(object):
 
     def replot(self, canvas):
         for i in range(self.npins):
-            if self.pin_color[i]:
-                canvas.itemconfig(self._pinhdl[i], fill=self.pin_color[i])
+            if self._pin_color[i]:
+                canvas.itemconfig(self._pinhdl[i], fill=self._pin_color[i])
 
     @staticmethod
     def _name2npins(name):
@@ -91,11 +95,11 @@ class DevicePlotter(Frame):
         self.qfp = QFP(device.get_package())
         self.qfp.marking = device.component_name
         self.qfp.center = kwargs['width'] // 2, kwargs['height'] // 2
-        for i in range(self.qfp.npins):
-            if self.device.get_pin_type(i + 1) == 'linkage':
-                self.qfp.pin_color[i] = 'gray'
-            elif self.device.is_jtag_name(self.device.get_pin_name(i + 1)):
-                self.qfp.pin_color[i] = 'white'
+        for pin in range(1, self.qfp.npins + 1):
+            if self.device.get_pin_type(pin) == 'linkage':
+                self.qfp.set_pin_color(pin, 'gray')
+            elif self.device.is_jtag_name(self.device.get_pin_name(pin)):
+                self.qfp.set_pin_color(pin, 'white')
         self.qfp.plot(self.canvas)
         self.test_pod = None  # type: TestPOD
         self.canvas.bind('<Button-1>', self.on_click)
@@ -132,9 +136,9 @@ class DevicePlotter(Frame):
             if pin_type in ('inout', 'in'):
                 state = self.test_pod.query_input_pin(name)
                 if state == 0:
-                    self.qfp.pin_color[i] = 'blue'
+                    self.qfp.set_pin_color(i, 'blue')
                 else:
-                    self.qfp.pin_color[i] = 'red'
+                    self.qfp.set_pin_color(i, 'red')
         self.qfp.replot(self.canvas)
         self.after(1000, self.update_pin_state)
 

@@ -2,6 +2,11 @@
 Use Mecrisp to query the pin states
 
 If run as toplevel it displays the pin state
+
+example for HY-TinySTM103 board::
+
+    python -mmecrisp_pod ../en.stm32f1_bsdl/STM32F1_Low_density_QFPN48.bsd /dev/ttyACM0 -R PA0 -R PA11 -R PA12
+
 """
 import os.path as osp
 import re
@@ -89,6 +94,9 @@ def _parse_args():
     p = argparse.ArgumentParser()
     p.add_argument('bsd_file')
     p.add_argument('port')
+    p.add_argument('-p', '--port-regexp', default='^P[A-F][123]?[0-9]$',
+                   help='a regexp for valid port names, default P[A-F]{0..32}')
+    p.add_argument('-R', '--remove-pin', action='append')
     return p.parse_args()
 
 
@@ -96,10 +104,10 @@ def main():
     args = _parse_args()
     dev = Device.from_bsd_file(args.bsd_file)
     pod = MecrispPOD(args.port)
-    pod.initialize_device(dev, 'P[A-F][123]?[0-9]')
-    pod.input_pins.remove('PA0')   # usb enable
-    pod.input_pins.remove('PA11')  # usb D
-    pod.input_pins.remove('PA12')  # usb D
+    pod.initialize_device(dev, args.port_regexp)
+    for pin in args.remove_pin:
+        pod.input_pins.remove(pin)
+    print('scanning', len(pod.input_pins), 'pins')
     pod.initialize_pins()
     master = tkinter.Tk()
     master.winfo_toplevel().title('MecrispPOD – %s @%s' % (osp.basename(args.bsd_file), osp.basename(args.port)))
